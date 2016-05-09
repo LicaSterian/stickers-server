@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"./../models"
-	"./../helpers"
 	"fmt"
 	"strconv"
 )
@@ -36,7 +35,8 @@ func (router *StickersRouter) GetSticker(c *gin.Context) {
 func (router *StickersRouter) PostAddSticker(c *gin.Context) {
 	stickerImage, _, formFileError := c.Request.FormFile("sticker")
 	stickerTitle := c.Request.FormValue("title")
-	if helpers.CheckError("PostAddSticker Error", formFileError) {
+	if formFileError != nil {
+		fmt.Println("PostAddSticker Error", formFileError)
 		return
 	}
 	router.model.AddSticker(stickerTitle, stickerImage)

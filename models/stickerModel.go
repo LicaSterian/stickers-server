@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"./../helpers"
 	"io/ioutil"
+	"fmt"
 )
 
 type StickerModel struct {
@@ -31,13 +32,15 @@ func (stickerModel *StickerModel) AddSticker(title string, image multipart.File)
 	stickersImagesGridFS := stickersDB.GridFS("stickerImages")
 	imageBsonId := bson.NewObjectId()
 	imageGridFSFile, err := stickersImagesGridFS.Create(imageBsonId.Hex())
-	if helpers.CheckError("PostAddSticker create error", err) {
+	if err != nil {
+		fmt.Println("PostAddSticker create error")
 		return
 	}
 	imageGridFSFile.SetId(imageBsonId)
 	defer image.Close()
 	_, err = io.Copy(imageGridFSFile, image)
-	if helpers.CheckError("PostAddSticker copy error", err) {
+	if err != nil {
+		fmt.Println("PostAddSticker copy error")
 		return
 	}
 
@@ -48,34 +51,39 @@ func (stickerModel *StickerModel) AddSticker(title string, image multipart.File)
 	})
 
 	err = imageGridFSFile.Close()
-	helpers.CheckError("PostAddSticker close error", err)
+	if err != nil {
+		fmt.Println("PostAddSticker close error", err)
+	}
 	return
 }
 
 func (stickerModel *StickerModel) GetStickerByFilename(filename string) (stickerBytes []byte, stickerMeta StickerImageMeta) {
 	gridFile, err := helpers.Session.DB("stickers").GridFS("stickerImages").Open(filename)
-	if helpers.CheckError("GetStickerByFilename open error", err) {
+	defer gridFile.Close()
+	if err != nil {
+		fmt.Println("GetStickerByFilename open error", err)
 		return
 	}
-	defer gridFile.Close()
 
 	stickerBytes, err = ioutil.ReadAll(gridFile)
-	if helpers.CheckError("GetStickerByFilename readAll error", err) {
+	if err != nil {
+		fmt.Println("GetStickerByFilename readAll error", err)
 		return
 	}
 
 	err = gridFile.GetMeta(&stickerMeta)
-	if helpers.CheckError("GetStickerByFilename getMeta error", err) {
+	if err != nil {
+		fmt.Println("GetStickerByFilename getMeta error", err)
 		return
 	}
-
 	return
 }
 
 func (stickerModel *StickerModel) GetStickersList(skip, limit int) ([]StickerFiles, error) {
 	var stickerFiles []StickerFiles
 	err := helpers.Session.DB("stickers").GridFS("stickerImages").Find(nil).Sort("-uploadDate").Skip(skip).Limit(limit).All(&stickerFiles)
-	if helpers.CheckError("GetSticker all error", err) {
+	if err != nil {
+		fmt.Println("GetSticker all error", err)
 		return nil, err
 	}
 	return stickerFiles, err
