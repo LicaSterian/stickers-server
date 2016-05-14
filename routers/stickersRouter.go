@@ -26,9 +26,9 @@ func InitStickersRouter(r *gin.Engine) {
 	routerGroup := r.Group("/stickers")
 	{
 		routerGroup.GET("/list", router.GetStickersList)
-		routerGroup.POST("/add", stickersRouter.PostAddSticker)
+		routerGroup.POST("/add", router.PostAddSticker)
 	}
-	r.GET("/sticker/:filename", stickersRouter.GetStickerByFilename)
+	r.GET("/sticker/:filename", router.GetStickerByFilename)
 }
 
 //
@@ -82,6 +82,7 @@ func (router *StickersRouter) PostAddSticker(c *gin.Context) {
 		fmt.Println("PostAddSticker Error", formFileError)
 		return
 	}
+	fmt.Println("router", router)
 	router.model.AddSticker(stickerTitle, stickerImage)
 	c.Redirect(http.StatusSeeOther, "/stickers/")
 }

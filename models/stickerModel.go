@@ -37,6 +37,7 @@ func (stickerModel *StickerModel) GetStickersList(skip, limit int) ([]StickerFil
 	return stickerFiles, err
 }
 
+//TODO remove fileName, use _id
 func (stickerModel *StickerModel) AddSticker(title string, image multipart.File) (err error) {
 	stickersDB := helpers.Session.DB("stickers")
 	stickersImagesGridFS := stickersDB.GridFS("stickerImages")
@@ -69,7 +70,6 @@ func (stickerModel *StickerModel) AddSticker(title string, image multipart.File)
 
 func (stickerModel *StickerModel) GetStickerByFilename(filename string) (stickerBytes []byte, stickerMeta StickerImageMeta) {
 	gridFile, err := helpers.Session.DB("stickers").GridFS("stickerImages").Open(filename)
-	defer gridFile.Close()
 	if err != nil {
 		fmt.Println("GetStickerByFilename open error", err)
 		return
@@ -82,6 +82,7 @@ func (stickerModel *StickerModel) GetStickerByFilename(filename string) (sticker
 	}
 
 	err = gridFile.GetMeta(&stickerMeta)
+	defer gridFile.Close()
 	if err != nil {
 		fmt.Println("GetStickerByFilename getMeta error", err)
 		return
