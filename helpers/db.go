@@ -22,5 +22,7 @@ func ConnectToMongo() {
 	Session, err = mgo.Dial("")
 	if err != nil {
 		fmt.Println("ConnectToMongo dial error", err)
+		return
 	}
+	fmt.Println("connected to mongo")
 }

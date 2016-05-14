@@ -27,6 +27,16 @@ type StickerImageMeta struct {
 	Author string `bson:"author"`
 }
 
+func (stickerModel *StickerModel) GetStickersList(skip, limit int) ([]StickerFiles, error) {
+	var stickerFiles []StickerFiles
+	err := helpers.Session.DB("stickers").GridFS("stickerImages").Find(nil).Sort("-uploadDate").Skip(skip).Limit(limit).All(&stickerFiles)
+	if err != nil {
+		fmt.Println("GetSticker all error", err)
+		return nil, err
+	}
+	return stickerFiles, err
+}
+
 func (stickerModel *StickerModel) AddSticker(title string, image multipart.File) (err error) {
 	stickersDB := helpers.Session.DB("stickers")
 	stickersImagesGridFS := stickersDB.GridFS("stickerImages")
@@ -77,14 +87,4 @@ func (stickerModel *StickerModel) GetStickerByFilename(filename string) (sticker
 		return
 	}
 	return
-}
-
-func (stickerModel *StickerModel) GetStickersList(skip, limit int) ([]StickerFiles, error) {
-	var stickerFiles []StickerFiles
-	err := helpers.Session.DB("stickers").GridFS("stickerImages").Find(nil).Sort("-uploadDate").Skip(skip).Limit(limit).All(&stickerFiles)
-	if err != nil {
-		fmt.Println("GetSticker all error", err)
-		return nil, err
-	}
-	return stickerFiles, err
 }
